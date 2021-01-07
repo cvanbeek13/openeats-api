@@ -1,4 +1,4 @@
-FROM python:3.6.5-alpine3.7
+FROM python:3.9.0-alpine3.12
 ENV PYTHONUNBUFFERED 1
 
 RUN apk update && apk upgrade && \
@@ -6,7 +6,7 @@ RUN apk update && apk upgrade && \
     gcc \
     mariadb \
     mariadb-dev \
-    py-mysqldb \
+    py3-mysqlclient \
     musl-dev \
     libjpeg-turbo-dev \
     zlib-dev
@@ -19,3 +19,4 @@ WORKDIR /code
 ADD base/requirements.txt /code/requirements.txt
 RUN pip install -r requirements.txt
 ADD . /code/
+

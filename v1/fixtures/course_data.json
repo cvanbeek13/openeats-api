@@ -13,8 +13,8 @@
         "model": "recipe_groups.course",
         "fields": {
             "author": 1,
-            "slug": "entry",
-            "title": "Entry"
+            "slug": "entree",
+            "title": "Entree"
         }
     },
     {
