@@ -56,10 +56,10 @@ class CuisineCountViewSet(viewsets.ModelViewSet):
             except:
                 return []
 
-        if 'tag' in self.request.query_params:
+        if 'tags' in self.request.query_params:
             try:
-                filter_set['tag__in'] = Tag.objects.filter(
-                    slug__in=self.request.query_params.get('tag').split(',')
+                filter_set['tags__in'] = Tag.objects.filter(
+                    slug__in=self.request.query_params.get('tags').split(',')
                 )
             except:
                 return []
@@ -126,10 +126,10 @@ class CourseCountViewSet(viewsets.ModelViewSet):
             except:
                 return []
 
-        if 'tag' in self.request.query_params:
+        if 'tags' in self.request.query_params:
             try:
-                filter_set['tag__in'] = Tag.objects.filter(
-                    slug__in=self.request.query_params.get('tag').split(',')
+                filter_set['tags__in'] = Tag.objects.filter(
+                    slug__in=self.request.query_params.get('tags').split(',')
                 )
             except:
                 return []
