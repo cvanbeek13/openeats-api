@@ -56,6 +56,14 @@ class CuisineCountViewSet(viewsets.ModelViewSet):
             except:
                 return []
 
+        if 'tag' in self.request.query_params:
+            try:
+                filter_set['tag__in'] = Tag.objects.filter(
+                    slug__in=self.request.query_params.get('tag').split(',')
+                )
+            except:
+                return []
+
         if 'search' in self.request.query_params:
             query = get_search_results(
                 ['title', 'ingredient_groups__ingredients__title', 'tags__title'],
@@ -118,6 +126,14 @@ class CourseCountViewSet(viewsets.ModelViewSet):
             except:
                 return []
 
+        if 'tag' in self.request.query_params:
+            try:
+                filter_set['tag__in'] = Tag.objects.filter(
+                    slug__in=self.request.query_params.get('tag').split(',')
+                )
+            except:
+                return []
+
         if 'search' in self.request.query_params:
             query = get_search_results(
                 ['title', 'ingredient_groups__ingredients__title', 'tags__title'],
@@ -150,3 +166,59 @@ class TagViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,
                           IsOwnerOrReadOnly)
     lookup_field = 'title'
+
+
+class TagCountViewSet(viewsets.ModelViewSet):
+    """
+    This viewset automatically provides `list`, `create`, `retrieve`,
+    `update` and `destroy` actions.
+
+    Uses `title` as the PK for any lookups.
+    """
+    serializer_class = serializers.AggTagSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
+                          IsOwnerOrReadOnly)
+    lookup_field = 'slug'
+
+    def get_queryset(self):
+        query = Recipe.objects
+        filter_set = {}
+
+        # If user is anonymous, restrict recipes to public.
+        if not self.request.user.is_authenticated:
+            filter_set['public'] = True
+
+        if 'course' in self.request.query_params:
+            try:
+                filter_set['course__in'] = Course.objects.filter(
+                    slug__in=self.request.query_params.get('course').split(',')
+                )
+            except:
+                return []
+
+        if 'cuisine' in self.request.query_params:
+            try:
+                filter_set['cuisine__in'] = Cuisine.objects.filter(
+                    slug__in=self.request.query_params.get('cuisine').split(',')
+                )
+            except:
+                return []
+
+        if 'search' in self.request.query_params:
+            query = get_search_results(
+                ['title', 'ingredient_groups__ingredients__title', 'tags__title'],
+                query,
+                self.request.query_params.get('search')
+            ).distinct()
+
+        query = query.filter(**filter_set)
+        if 'rating' in self.request.query_params:
+            # TODO: this many not be very efficient on huge query sets.
+            # I don't think I will ever get to the point of this mattering
+            query = query.annotate(rating_avg=Avg('rating__rating'))
+            query = [
+                recipe.id for recipe in query
+                if str(convert_rating_to_int(recipe.rating_avg)) in self.request.query_params.get('rating').split(',')
+            ]
+
+        return Tag.objects.filter(recipe__in=query).annotate(total=Count('recipe', distinct=True))

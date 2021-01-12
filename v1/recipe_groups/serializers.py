@@ -61,3 +61,12 @@ class TagSerializer(serializers.ModelSerializer):
             'id',
             'title',
         )
+
+
+class AggTagSerializer(serializers.ModelSerializer):
+    """ Standard `rest_framework` ModelSerializer """
+    total = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Tag
+        fields = '__all__'
