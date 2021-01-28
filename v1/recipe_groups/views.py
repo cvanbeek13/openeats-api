@@ -56,14 +56,6 @@ class CuisineCountViewSet(viewsets.ModelViewSet):
             except:
                 return []
 
-        if 'tags' in self.request.query_params:
-            try:
-                filter_set['tags__in'] = Tag.objects.filter(
-                    slug__in=self.request.query_params.get('tags').split(',')
-                )
-            except:
-                return []
-
         if 'search' in self.request.query_params:
             query = get_search_results(
                 ['title', 'ingredient_groups__ingredients__title', 'tags__title'],
@@ -72,6 +64,14 @@ class CuisineCountViewSet(viewsets.ModelViewSet):
             ).distinct()
 
         query = query.filter(**filter_set)
+
+        if 'tags' in self.request.query_params:
+            try:
+                query_tags = self.request.query_params.get('tags').split(',')
+                query = query.filter(tags__slug__in=query_tags).annotate(num_tags=Count('tags')).filter(num_tags=len(query_tags))
+            except:
+                return []
+
         if 'rating' in self.request.query_params:
             # TODO: this many not be very efficient on huge query sets.
             # I don't think I will ever get to the point of this mattering
@@ -126,14 +126,6 @@ class CourseCountViewSet(viewsets.ModelViewSet):
             except:
                 return []
 
-        if 'tags' in self.request.query_params:
-            try:
-                filter_set['tags__in'] = Tag.objects.filter(
-                    slug__in=self.request.query_params.get('tags').split(',')
-                )
-            except:
-                return []
-
         if 'search' in self.request.query_params:
             query = get_search_results(
                 ['title', 'ingredient_groups__ingredients__title', 'tags__title'],
@@ -142,6 +134,14 @@ class CourseCountViewSet(viewsets.ModelViewSet):
             ).distinct()
 
         query = query.filter(**filter_set)
+
+        if 'tags' in self.request.query_params:
+            try:
+                query_tags = self.request.query_params.get('tags').split(',')
+                query = query.filter(tags__slug__in=query_tags).annotate(num_tags=Count('tags')).filter(num_tags=len(query_tags))
+            except:
+                return []
+
         if 'rating' in self.request.query_params:
             # TODO: this many not be very efficient on huge query sets.
             # I don't think I will ever get to the point of this mattering
@@ -212,6 +212,14 @@ class TagCountViewSet(viewsets.ModelViewSet):
             ).distinct()
 
         query = query.filter(**filter_set)
+
+        if 'tags' in self.request.query_params:
+            try:
+                query_tags = self.request.query_params.get('tags').split(',')
+                query = query.filter(tags__slug__in=query_tags).annotate(num_tags=Count('tags')).filter(num_tags=len(query_tags))
+            except:
+                return []
+
         if 'rating' in self.request.query_params:
             # TODO: this many not be very efficient on huge query sets.
             # I don't think I will ever get to the point of this mattering

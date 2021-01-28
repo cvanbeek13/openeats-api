@@ -2,7 +2,7 @@
 # encoding: utf-8
 
 import random
-from django.db.models import Avg
+from django.db.models import Avg, Count
 
 from rest_framework import permissions, viewsets, filters
 from rest_framework.response import Response
@@ -44,12 +44,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 slug__in=self.request.query_params.get('course__slug').split(',')
             )
 
-        if 'tags__slug' in self.request.query_params:
-            filter_set['tags__in'] = Tag.objects.filter(
-                slug__in=self.request.query_params.get('tags__slug').split(',')
-            )
-
         query = query.filter(**filter_set)
+        if 'tags__slug' in self.request.query_params:
+            query_tags = self.request.query_params.get('tags__slug').split(',')
+            query = query.filter(tags__slug__in=query_tags).annotate(num_tags=Count('tags')).filter(num_tags=len(query_tags))
+
         if 'rating' not in self.request.query_params:
             return query
 
